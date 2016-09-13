@@ -1,0 +1,25 @@
+opam-version: "1.2"
+homepage:     "https://github.com/ciaran16/ocaml_shell_9p"
+dev-repo:     "https://github.com/ciaran16/ocaml_shell_9p.git"
+bug-reports:  "https://github.com/ciaran16/ocaml_shell_9p/issues"
+author:       "Ciaran Lawlor"
+maintainer:   "Ciaran Lawlor"
+license:      "ISC"
+
+build: [
+  "ocaml" "pkg/pkg.ml" "build" "--pinned" pinned
+]
+
+depends: [
+  "ocamlbuild" {build}
+  "ocamlfind" {build}
+  "topkg" {build}
+  "shell"
+  "protocol-9p"
+  "result"
+  "notty"
+  "cstruct"
+  "fmt"
+  "logs"
+]
+available: [ocaml-version >= "4.02.0"]
