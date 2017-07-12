@@ -1,6 +1,5 @@
-open Protocol_9p
-open Infix
-open Result
+open Protocol_9p_unix
+open Protocol_9p.Infix
 open Lwt.Infix
 
 module Log = (val Logs.src_log Logs.default)
@@ -8,7 +7,7 @@ module Client = Client9p_unix.Make (Log)
 
 let () = Logs.set_reporter (Logs_fmt.reporter ())
 
-type 'a error_lwt = 'a Error.t Lwt.t
+type 'a error_lwt = 'a Protocol_9p.Error.t Lwt.t
 
 let return_error msg = Error (`Msg msg) |> Lwt.return
 
@@ -71,7 +70,7 @@ end = struct
   let is_dir path =
     client () >>*= fun client ->
     Client.stat client path >>*= fun stat ->
-    Types.(stat.Stat.mode.FileMode.is_directory) |> return_ok
+    Protocol_9p.Types.(stat.Stat.mode.FileMode.is_directory) |> return_ok
 
   let set_cwd dir =
     is_dir dir >>*= function
@@ -132,8 +131,8 @@ let client_and_filepath raw_path =
   | false -> return_ok (client, path)
 
 let print_stats stats =
-  let module Stat = Types.Stat in
-  let open Types.FileMode in
+  let module Stat = Protocol_9p.Types.Stat in
+  let open Protocol_9p.Types.FileMode in
   let row_of_stat x =
     let permissions p =
       (if List.mem `Read p then "r" else "-")
@@ -210,7 +209,7 @@ let separate_last_name path =
 let mkdir raw_path =
   client_and_path raw_path >>*= fun (client, path) ->
   separate_last_name path >>*= fun (dir, name) ->
-  let mode = Protocol_9p_types.FileMode.make ~is_directory:true
+  let mode = Protocol_9p.Types.FileMode.make ~is_directory:true
       ~owner:[`Read; `Write; `Execute] ~group:[`Read; `Execute]
       ~other:[`Read; `Execute ] () in
   Client.mkdir client dir name mode
@@ -218,7 +217,7 @@ let mkdir raw_path =
 let touch raw_path =
   client_and_path raw_path >>*= fun (client, path) ->
   separate_last_name path >>*= fun (dir, name) ->
-  let mode = Protocol_9p_types.FileMode.make ~is_directory:false
+  let mode = Protocol_9p.Types.FileMode.make ~is_directory:false
       ~owner:[`Read; `Write] ~group:[`Read] ~other:[`Read] () in
   Client.create client dir name mode
 
@@ -254,7 +253,7 @@ let write_to_fid client fid buf =
       let to_request = min len maximum_payload in
       Client.LowLevel.write client fid offset
         (Cstruct.sub remaining 0 to_request) >>*=
-      fun {Protocol_9p_response.Write.count} ->
+      fun {Protocol_9p.Response.Write.count} ->
       let count = Int32.to_int count in
       let remaining = Cstruct.shift remaining count in
       loop ~offset:Int64.(add offset (of_int count)) remaining
@@ -266,7 +265,7 @@ let write raw_path data =
   Client.with_fid client (fun fid ->
       Client.walk_from_root client fid filepath >>*= fun _qids ->
       let open Client.LowLevel in
-      openfid client fid Types.OpenMode.write_only >>*= fun _ ->
+      openfid client fid Protocol_9p.Types.OpenMode.write_only >>*= fun _ ->
       update client fid ~length:0L >>*= fun () ->
       Cstruct.of_string data |> write_to_fid client fid
     )
@@ -310,7 +309,7 @@ let reload_cache dir =
   State.client () >>*= fun (client) ->
   Client.readdir client dir >>*= fun stats ->
   let names = stats |> List.map (fun stat ->
-      let open Types in
+      let open Protocol_9p.Types in
       stat.Stat.name ^ (if stat.Stat.mode.FileMode.is_directory then "/" else "")
     ) in
   cache := {valid = true; dir; names};

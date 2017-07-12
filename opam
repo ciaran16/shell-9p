@@ -15,7 +15,7 @@ depends: [
   "ocamlfind" {build}
   "topkg" {build}
   "shell"
-  "protocol-9p"
+  "protocol-9p-unix"
   "result"
   "notty"
   "cstruct"

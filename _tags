@@ -2,4 +2,4 @@ true : warn(+a-4-44-48), bin_annot, safe_string
 true : package(result)
 
 <src> : include
-<src/*> : package(shell.unix), package(protocol-9p.unix), package(lwt), package(notty), package(cstruct), package(fmt), package(logs.fmt)
+<src/*> : package(shell.unix), package(protocol-9p-unix), package(lwt), package(notty), package(cstruct), package(fmt), package(logs.fmt)

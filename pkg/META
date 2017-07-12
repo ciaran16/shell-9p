@@ -1,3 +1,3 @@
 description = "A shell for interacting with a remote machine over 9P, using OCaml-9P."
 version = "0.1"
-requires = "shell.unix protocol-9p.unix lwt notty cstruct fmt logs.fmt"
+requires = "shell.unix protocol-9p-unix lwt notty cstruct fmt logs.fmt"
